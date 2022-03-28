@@ -66,7 +66,10 @@
         └── myPlayLists         (個人音樂庫)
 
 ```
+---
+## Dependency
+- [Concurrently](https://www.npmjs.com/package/concurrently)
 
 
-
+// "homepage": "https://chen-chens.github.io/project-music-app/",
 

@@ -14,24 +14,14 @@ const LoginForm = () =>{
 
     // form 資料驗證成功
     const onFinish = () => {
-        const client_id = 'd2a09310d88449df94972cd08f3a96ec'; // Your client id
-        const client_secret = 'e09ce6492cad46bd8a8414d9bbd28e30'; // Your secret
-
-        axios('https://accounts.spotify.com/api/token', {
-            method: 'POST',
-            headers : { 
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + Buffer.from(`${client_id}:${client_secret}`).toString('base64')
-            },  
-            data: 'grant_type=client_credentials',
-        }).then(res => {
-            console.log("res: ", res.data.access_token);
+        axios
+        .post("/login")
+        .then(res => {
             dispatch(currentUserActions.getToken(res.data.access_token));
             dispatch(currentUserActions.userExpired(false));
             navigate("/master");
         }).catch(err => {
-            console.log("clientCredentials err: ", err);
-
+            console.log("client-side get err: ", err)
             AlertNotification({
                 type: "error",
                 title: "無法連線 Spotify！"
