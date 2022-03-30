@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Dispatch } from 'react';
 import SpotifyWebApi from 'spotify-web-api-js';
 import { currentPlayingActions, currentUserActions } from '../reduxToolkit';
@@ -14,3 +15,7 @@ export function checkStatusCode(status: number, dispatch: Dispatch<any>){
         dispatch(currentPlayingActions.closePlayBar());
     }
 }
+
+export const axiosBaseConfig = axios.create({
+    headers: {'content-type': 'application/json; charset=utf-8'}
+});

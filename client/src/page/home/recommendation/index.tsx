@@ -6,9 +6,10 @@ import AlertNotification from "../../../components/alertNotifacation";
 import { Container } from "../../../components/container";
 import { ThemeContext } from "../../../theme";
 import { currentPlayingActions, currentUserData } from "../../../reduxToolkit";
-import { spotifyApi, checkStatusCode } from "../../../service";
+import { spotifyApi, checkStatusCode, axiosBaseConfig } from "../../../service";
 import { Genrees } from "../../../type/genrees";
 import { DetailList } from "./detailList";
+import axios from "axios";
 
 
 export default function Recommendation(){
@@ -50,23 +51,47 @@ export default function Recommendation(){
         },
     ];
 
+    const getRecommendations = async(genresKey: string) => {
+        setLoading(true);
+        try{
+            const request = { seed_genres: genresKey };
+            const response = await axiosBaseConfig.get('/master/getRecommendations', { 
+                headers:{"Authorization": `Bearer ${token}`},
+                params: request 
+            });
+            const dataWithPreviewUrl = response.data.tracks.filter((item: SpotifyApi.TrackObjectFull) => item.preview_url !== null) as SpotifyApi.TrackObjectFull[];
+            setRecommendationList(dataWithPreviewUrl);
+        }catch(err){
+            console.log("api getRecommendations err: ",err);
+            // checkStatusCode(err.status, dispatch);
+
+            AlertNotification({
+                type: "error",
+                title: "取得資料失敗！"
+            });
+        }finally{
+            setLoading(false);
+        }
+    }
+
     useEffect(()=> {
         if(token){
-            setLoading(true);
-            spotifyApi().setAccessToken(token);
-            spotifyApi().getRecommendations({ seed_genres: genresKey })
-            .then(res => {
-                const dataWithPreviewUrl = res.tracks.filter(item => item.preview_url !== null) as SpotifyApi.TrackObjectFull[];
-                setRecommendationList(dataWithPreviewUrl);
-            }).catch(err => {
-                console.log("api getRecommendations err: ",err);
-                checkStatusCode(err.status, dispatch);
+            getRecommendations(genresKey);
+            // setLoading(true);
+            // spotifyApi().setAccessToken(token);
+            // spotifyApi().getRecommendations({ seed_genres: genresKey })
+            // .then(res => {
+            //     const dataWithPreviewUrl = res.tracks.filter(item => item.preview_url !== null) as SpotifyApi.TrackObjectFull[];
+            //     setRecommendationList(dataWithPreviewUrl);
+            // }).catch(err => {
+            //     console.log("api getRecommendations err: ",err);
+            //     checkStatusCode(err.status, dispatch);
 
-                AlertNotification({
-                    type: "error",
-                    title: "取得資料失敗！"
-                })
-            }).finally(() => setLoading(false))
+            //     AlertNotification({
+            //         type: "error",
+            //         title: "取得資料失敗！"
+            //     })
+            // }).finally(() => setLoading(false))
         }
     }, [token, genresKey])
     

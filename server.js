@@ -18,11 +18,17 @@ app.use(morgan("tiny"));
 
 
 const path = require("path");
-app.use('/css', express.static(path.resolve(__dirname, "public/css")));
-app.use('/js', express.static(path.resolve(__dirname, "public/js")));
+app.use('/css', express.static(path.resolve(__dirname, "public/css")))
+app.use('/js', express.static(path.resolve(__dirname, "public/js")))
 
 
-// Routes:
+// body-parser
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+
+
+/* Routes */
 app.get('/', (req, res) => {
     res.send("client-side connects to server-side.")
 })
@@ -42,46 +48,45 @@ app.post('/login', (req, res) => {
             expires_in: data.body.expires_in,
             token_type: data.body.token_type
         })
-        spotifyApi.setAccessToken(data.body['access_token']);
     }).catch(err => {
-        console.log("clientCredentialsGrant err: ", err)
         res.sendStatus(400)
+        res.send(err)
     })
 })
 
 // api: getRecommendations
-// Get Recommendations Based on Seeds
-app.get('/master', (req, res) => {
-    spotifyApi.getRecommendations({
-      min_energy: 0.4,
-      seed_artists: ['6mfK6Q2tzLMEchAr0e9Uzu', '4DYFVNKZ1uixa6SQTvzQwJ'],
-      min_popularity: 50
-    })
-  .then(function(data) {
-    let recommendations = data.body;
-    console.log(recommendations);
-  }, function(err) {
-    console.log("Something went wrong!", err);
+app.get('/master/getRecommendations', (req, res) => {
+  // console.log("req.query: ", req.query);
+  // console.log("token: ", req.headers.authorization.split(' ')[1]);
+  const spotifyApi = new SpotifyWebApi({
+    accessToken: req.headers.authorization.split(' ')[1]
   });
+
+  spotifyApi
+    .getRecommendations(req.query)
+    .then((data) => {
+      res.json(data.body)
+    }).catch(err => {
+      console.log("getRecommendations err: ", err)
+      res.sendStatus(400)
+      res.send({
+        message: err,
+        status: 400
+      })
+    })
 })
 
 
 // api: searchTracks
-// Set the credentials when making the request
-// var spotifyApi = new SpotifyWebApi({
-//     accessToken: 'njd9wng4d0ycwnn3g4d1jm30yig4d27iom5lg4d3'
-//   });
-  
-//   // Do search using the access token
-//   spotifyApi.searchTracks('artist:Love').then(
-//     function(data) {
-//       console.log(data.body);
-//     },
-//     function(err) {
-//       console.log('Something went wrong!', err);
-//     }
-//   );
-
+app.get('')
+  spotifyApi.searchTracks('artist:Love').then(
+    function(data) {
+      console.log(data.body);
+    },
+    function(err) {
+      console.log('Something went wrong!', err);
+    }
+);
 
 app.listen(8000, ()=> {
   console.log("server is running...")
